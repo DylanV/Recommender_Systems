@@ -60,3 +60,13 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#Pycharm
+.idea/
+.name
+encodings.xml
+latent-dirichlet-allocation.iml
+misc.xml
+modules.xml
+vcs.xml
+workspace.xml
