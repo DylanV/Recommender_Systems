@@ -3,6 +3,7 @@ import pandas as pd
 
 from aux import clamp
 
+
 class CollaborativeFiltering(object):
 
     def __init__(self, ratings):
@@ -59,6 +60,21 @@ class CollaborativeFiltering(object):
             raise KeyError(method+' is not an implemented method.')
 
     @staticmethod
+    def adjust_user_similiarity_knn(user_similarity, k):
+        """
+
+        :param user_similarity:
+        :param k:
+        :return:
+        """
+        adjusted_similarity = pd.DataFrame(np.zeros(user_similarity.shape), index=user_similarity.index, columns=user_similarity.columns)
+        for user in user_similarity.iterrows():
+            top_k_indexes = user[1].sort_values(ascending=False).iloc[0:k+1].index.values
+            adjusted_similarity.loc[user[0], top_k_indexes] = user_similarity.loc[user[0], top_k_indexes]
+
+        return adjusted_similarity
+
+    @staticmethod
     def adjust_ratings(ratings, user_means, user_std_devs=None):
         """
 
@@ -92,9 +108,10 @@ class CollaborativeFiltering(object):
         adjusted_predictions = adjusted_predictions.fillna(value=0).applymap(clamp)
         return adjusted_predictions
 
-    def predict_user_user(self, adjust='none', similarity='cosine'):
+    def predict_user_user(self, adjust='full', similarity='cosine', k=-1):
         """
 
+        :param k:
         :param adjust:
         :param similarity:
         :return:
@@ -106,6 +123,8 @@ class CollaborativeFiltering(object):
             ratings = self.adjust_ratings(ratings, self.user_means, self.user_std_devs)
 
         user_similarity = self.get_user_similarity(ratings, method=similarity)
+        if k != -1:
+            user_similarity = self.adjust_user_similiarity_knn(user_similarity, k)
 
         predictions = user_similarity.dot(ratings)
         denom = user_similarity.abs().sum().transpose()
