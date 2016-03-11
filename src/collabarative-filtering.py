@@ -115,7 +115,10 @@ class CollaborativeFiltering(object):
 
     def predict_user_user(self, adjust='full', similarity='cosine', k=-1):
         """
-        Do user user prediciton
+        Do user user prediction.
+        Options to use mean or mean and std-dev (full) adjusted ratings (default full),
+        Cosine or pearson correlation for user similarity (default cosine),
+        and the number of neighbours to consider (default all).
         :param k: The number of neighbours for k-nearest neighbours
         :param adjust: <'mean','full'> adjust the ratings for user means or means and standard deviations respectively
         :param similarity: <'cosine', 'pearson'> The similarity measure for the user similarity
