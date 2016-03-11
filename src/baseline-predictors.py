@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-class BaselinePredicor(object):
+class BaselinePredictor(object):
 
     def __init__(self, ratings):
         self.ratings = ratings
@@ -17,7 +17,6 @@ class BaselinePredicor(object):
         :type ratings: DataFrame
         :return: A DataFrame indexed on user_id with one column mean with the user means
         """
-
         ratings = ratings.replace(0, np.nan)
         means = pd.DataFrame(ratings.mean(axis=1), index=ratings.index, columns=['mean']).fillna(value=0)
         return means
@@ -30,7 +29,6 @@ class BaselinePredicor(object):
         :type ratings: DataFrame
         :return: A DataFrame indexed on user_id with one column std with the user standard deviations
         """
-
         ratings = ratings.replace(0, np.nan)
         std_devs = pd.DataFrame(ratings.std(axis=1), index=ratings.index, columns=['std'])
         std_devs = std_devs.fillna(value=0)
@@ -50,3 +48,13 @@ class BaselinePredicor(object):
         elif x < floor:
             x = floor
         return x
+
+    def predict_user_based(self):
+        """
+        Calculate a baseline prediction based on user means
+        :return: A prediction DataFrame same shape as ratings
+        """
+        user_means = self.calculate_user_means(self.ratings)
+        predicted = pd.DataFrame(np.ones(self.ratings.shape) * user_means.values,
+                                 index=self.ratings.index, columns=self.ratings.columns)
+        return predicted
