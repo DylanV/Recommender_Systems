@@ -60,7 +60,7 @@ class CollaborativeFiltering(object):
             raise KeyError(method+' is not an implemented method.')
 
     @staticmethod
-    def adjust_user_similiarity_knn(user_similarity, k):
+    def adjust_user_similarity_knn(user_similarity, k):
         """
         Adjust the user similarity matrix for use with k-nearest neighbours.
         For each user the top k neighbours are kept and for the rest the similarity is set to 0.
@@ -132,7 +132,7 @@ class CollaborativeFiltering(object):
 
         user_similarity = self.get_user_similarity(ratings, method=similarity)
         if k != -1:
-            user_similarity = self.adjust_user_similiarity_knn(user_similarity, k)
+            user_similarity = self.adjust_user_similarity_knn(user_similarity, k)
 
         predictions = user_similarity.dot(ratings)
         denom = user_similarity.abs().sum().transpose()
