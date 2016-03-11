@@ -5,9 +5,11 @@ import pandas as pd
 class BaselinePredictor(object):
 
     def __init__(self, ratings):
+        """
+        :param ratings: The ratings DataFrame
+        :type ratings: DataFrame
+        """
         self.ratings = ratings
-        self.ratings_index = ratings.index
-        self.ratings_col = ratings.columns
 
     @staticmethod
     def calculate_user_means(ratings):
@@ -24,14 +26,13 @@ class BaselinePredictor(object):
     @staticmethod
     def calculate_user_std_devs(ratings):
         """
-        Calculate the user standatd deviations in the user x item DataFrame
+        Calculate the user standard deviations in the user x item DataFrame
         :param ratings: the ratings DataFrame
         :type ratings: DataFrame
         :return: A DataFrame indexed on user_id with one column std with the user standard deviations
         """
         ratings = ratings.replace(0, np.nan)
-        std_devs = pd.DataFrame(ratings.std(axis=1), index=ratings.index, columns=['std'])
-        std_devs = std_devs.fillna(value=0)
+        std_devs = pd.DataFrame(ratings.std(axis=1), index=ratings.index, columns=['std']).fillna(value=0)
         return std_devs
 
     @staticmethod
@@ -69,7 +70,7 @@ class BaselinePredictor(object):
         user_means = self.calculate_user_means(self.ratings)
         predicted = pd.DataFrame(np.ones(self.ratings.shape) * user_means.values,
                                  index=self.ratings.index, columns=self.ratings.columns)
-        predicted.applymap(self.clamp)
+        predicted = predicted.applymap(self.clamp)
         return predicted
 
     def predict_item_based(self):
@@ -80,5 +81,18 @@ class BaselinePredictor(object):
         movie_means = self.calculate_item_means(self.ratings)
         predicted = pd.DataFrame((np.ones(self.ratings.shape).transpose() * movie_means.values).transpose(),
                                  index=self.ratings.index, columns=self.ratings.columns)
-        predicted.applymap(self.clamp)
+        predicted = predicted.applymap(self.clamp)
+        return predicted
+
+    def predict_item_user_based(self):
+        """
+        Calculate a baseline prediction based on item means and user average offsets
+        :return: The prediction DataFrame
+        """
+        movie_means = self.calculate_item_means(self.ratings)
+        user_std_devs = self.calculate_user_std_devs(self.ratings)
+        predicted_values = (np.ones(self.ratings.shape).transpose() * movie_means.values).transpose()
+        predicted_values = predicted_values + user_std_devs.values
+        predicted = pd.DataFrame(predicted_values, index=self.ratings.index, columns=self.ratings.columns)
+        predicted = predicted.applymap(self.clamp)
         return predicted
