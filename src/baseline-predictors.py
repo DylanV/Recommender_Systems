@@ -35,3 +35,18 @@ class BaselinePredicor(object):
         std_devs = pd.DataFrame(ratings.std(axis=1), index=ratings.index, columns=['std'])
         std_devs = std_devs.fillna(value=0)
         return std_devs
+
+    @staticmethod
+    def clamp(x, floor=1, ceiling=5):
+        """
+        Clamps a value between the values floor and ceiling
+        :param x: The value to be clamped
+        :param floor: The minimum value for x
+        :param ceiling: The maximum value for x
+        :return: The clamped value of x
+        """
+        if x > ceiling:
+            x = max
+        elif x < floor:
+            x = floor
+        return x
