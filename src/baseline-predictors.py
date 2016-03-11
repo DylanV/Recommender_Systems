@@ -35,6 +35,18 @@ class BaselinePredictor(object):
         return std_devs
 
     @staticmethod
+    def calculate_item_means(ratings):
+        """
+        Calculate the item means
+        :param ratings: ratings DataFrame
+        :type ratings: DataFrame
+        :return: The item means
+        """
+        ratings = ratings.replace(0, np.nan)
+        means = pd.DataFrame(ratings.mean(axis=0), index=ratings.columns, columns=['mean']).fillna(value=0)
+        return means
+
+    @staticmethod
     def clamp(x, floor=1, ceiling=5):
         """
         Clamps a value between the values floor and ceiling
@@ -57,4 +69,16 @@ class BaselinePredictor(object):
         user_means = self.calculate_user_means(self.ratings)
         predicted = pd.DataFrame(np.ones(self.ratings.shape) * user_means.values,
                                  index=self.ratings.index, columns=self.ratings.columns)
+        predicted.applymap(self.clamp)
+        return predicted
+
+    def predict_item_based(self):
+        """
+        Calculate a baseline prediction based on item means
+        :return: A DataFrame in the same shape as ratings with predictions as values
+        """
+        movie_means = self.calculate_item_means(self.ratings)
+        predicted = pd.DataFrame((np.ones(self.ratings.shape).transpose() * movie_means.values).transpose(),
+                                 index=self.ratings.index, columns=self.ratings.columns)
+        predicted.applymap(self.clamp)
         return predicted
