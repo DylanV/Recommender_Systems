@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from aux import clamp
+
 
 class BaselinePredictor(object):
 
@@ -47,21 +49,6 @@ class BaselinePredictor(object):
         means = pd.DataFrame(ratings.mean(axis=0), index=ratings.columns, columns=['mean']).fillna(value=0)
         return means
 
-    @staticmethod
-    def clamp(x, floor=1, ceiling=5):
-        """
-        Clamps a value between the values floor and ceiling
-        :param x: The value to be clamped
-        :param floor: The minimum value for x
-        :param ceiling: The maximum value for x
-        :return: The clamped value of x
-        """
-        if x > ceiling:
-            x = max
-        elif x < floor:
-            x = floor
-        return x
-
     def predict_user_based(self):
         """
         Calculate a baseline prediction based on user means
@@ -70,7 +57,7 @@ class BaselinePredictor(object):
         user_means = self.calculate_user_means(self.ratings)
         predicted = pd.DataFrame(np.ones(self.ratings.shape) * user_means.values,
                                  index=self.ratings.index, columns=self.ratings.columns)
-        predicted = predicted.applymap(self.clamp)
+        predicted = predicted.applymap(clamp)
         return predicted
 
     def predict_item_based(self):
@@ -81,7 +68,7 @@ class BaselinePredictor(object):
         movie_means = self.calculate_item_means(self.ratings)
         predicted = pd.DataFrame((np.ones(self.ratings.shape).transpose() * movie_means.values).transpose(),
                                  index=self.ratings.index, columns=self.ratings.columns)
-        predicted = predicted.applymap(self.clamp)
+        predicted = predicted.applymap(clamp)
         return predicted
 
     def predict_item_user_based(self):
@@ -94,5 +81,5 @@ class BaselinePredictor(object):
         predicted_values = (np.ones(self.ratings.shape).transpose() * movie_means.values).transpose()
         predicted_values = predicted_values + user_std_devs.values
         predicted = pd.DataFrame(predicted_values, index=self.ratings.index, columns=self.ratings.columns)
-        predicted = predicted.applymap(self.clamp)
+        predicted = predicted.applymap(clamp)
         return predicted

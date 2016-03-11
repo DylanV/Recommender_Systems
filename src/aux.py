@@ -72,3 +72,18 @@ def get_rmse(predicted, actual):
     """
     return np.sqrt(mean_squared_error(actual.values[actual.values.nonzero()].flatten(),
                                       predicted.values[actual.values.nonzero()].flatten()))
+
+
+def clamp(x, floor=1, ceiling=5):
+    """
+    Clamps a value between the values floor and ceiling
+    :param x: The value to be clamped
+    :param floor: The minimum value for x
+    :param ceiling: The maximum value for x
+    :return: The clamped value of x
+    """
+    if x > ceiling:
+        x = max
+    elif x < floor:
+        x = floor
+    return x

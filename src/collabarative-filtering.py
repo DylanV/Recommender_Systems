@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from aux import clamp
 
 class CollaborativeFiltering(object):
 
@@ -10,6 +11,8 @@ class CollaborativeFiltering(object):
         :type ratings: DataFrame
         """
         self.ratings = ratings
+        self.user_means = self.calculate_user_means(self.ratings)
+        self.user_std_devs = self.calculate_user_std_devs(self.ratings)
 
     @staticmethod
     def calculate_user_means(ratings):
@@ -55,21 +58,24 @@ class CollaborativeFiltering(object):
         else:
             raise KeyError(method+' is not an implemented method.')
 
-    def adjust_ratings(self, user_means, user_std_devs=None):
+    @staticmethod
+    def adjust_ratings(ratings, user_means, user_std_devs=None):
         """
 
+        :param ratings:
         :param user_means:
         :param user_std_devs:
         :return:
         """
-        adjusted_ratings_values = self.ratings.values - user_means.values
+        adjusted_ratings_values = ratings.values - user_means.values
         if user_std_devs:
             adjusted_ratings_values = adjusted_ratings_values / user_std_devs.values
-        adjusted_ratings = pd.DataFrame(adjusted_ratings_values, index=self.rating.index, columns=self.index.columns)
+        adjusted_ratings = pd.DataFrame(adjusted_ratings_values, index=ratings.index, columns=ratings.columns)
         adjusted_ratings.fillna(value=0)
         return adjusted_ratings
 
-    def adjust_predictions(self, predicted,  user_means, user_std_devs=None):
+    @staticmethod
+    def adjust_predictions(predicted,  user_means, user_std_devs=None):
         """
         :param predicted:
         :param user_means:
@@ -82,8 +88,33 @@ class CollaborativeFiltering(object):
             adjusted_predicitons_values = predicted.values
         adjusted_predicted_values = adjusted_predicitons_values + user_means.values
         adjusted_predictions = pd.DataFrame(adjusted_predicted_values,
-                                            index=self.ratings.index, columns=self.ratings.columns)
-        adjusted_predictions = adjusted_predictions.fillna(value=0).applymap(self.clamp)
+                                            index=predicted.index, columns=predicted.columns)
+        adjusted_predictions = adjusted_predictions.fillna(value=0).applymap(clamp)
         return adjusted_predictions
 
+    def predict_user_user(self, adjust='none', similarity='cosine'):
+        """
 
+        :param adjust:
+        :param similarity:
+        :return:
+        """
+        ratings = self.ratings
+        if adjust == 'mean':
+            ratings = self.adjust_ratings(ratings, self.user_means)
+        elif adjust == 'full':
+            ratings = self.adjust_ratings(ratings, self.user_means, self.user_std_devs)
+
+        user_similarity = self.get_user_similarity(ratings, method=similarity)
+
+        predictions = user_similarity.dot(ratings)
+        denom = user_similarity.abs().sum().transpose()
+        predictions = predictions.div(denom, axis='index')
+
+        if adjust == 'mean':
+            predictions = self.adjust_predictions(predictions, self.user_means)
+        elif adjust == 'full':
+            predictions = self.adjust_predictions(self.user_means, self.user_std_devs)
+
+        predictions = pd.DataFrame(predictions.values, index=self.ratings.index, columns=self.ratings.columns)
+        return predictions
