@@ -42,10 +42,10 @@ class CollaborativeFiltering(object):
     @staticmethod
     def get_user_similarity(ratings, method='cosine'):
         """
-
+        Calculate the user similarity matrix
         :param ratings: The ratings DataFrame
         :type ratings: DataFrame
-        :param method: 'cosine' or 'pearson'
+        :param method: <'cosine', 'pearson'> the similarity measure to be used
         :return:
         """
         if method == 'cosine':
@@ -62,12 +62,16 @@ class CollaborativeFiltering(object):
     @staticmethod
     def adjust_user_similiarity_knn(user_similarity, k):
         """
-
-        :param user_similarity:
-        :param k:
-        :return:
+        Adjust the user similarity matrix for use with k-nearest neighbours.
+        For each user the top k neighbours are kept and for the rest the similarity is set to 0.
+        Thus in the prediction their ratings will be ignored in the calculation.
+        :param user_similarity: The user similarity DataFrame
+        :param k: the number of neighbours for k-nearest neighbour
+        :return: The adjusted similarity DataFrame
         """
-        adjusted_similarity = pd.DataFrame(np.zeros(user_similarity.shape), index=user_similarity.index, columns=user_similarity.columns)
+        adjusted_similarity = pd.DataFrame(np.zeros(user_similarity.shape),
+                                           index=user_similarity.index, columns=user_similarity.columns)
+
         for user in user_similarity.iterrows():
             top_k_indexes = user[1].sort_values(ascending=False).iloc[0:k+1].index.values
             adjusted_similarity.loc[user[0], top_k_indexes] = user_similarity.loc[user[0], top_k_indexes]
@@ -77,11 +81,11 @@ class CollaborativeFiltering(object):
     @staticmethod
     def adjust_ratings(ratings, user_means, user_std_devs=None):
         """
-
-        :param ratings:
-        :param user_means:
-        :param user_std_devs:
-        :return:
+        Adjust the ratings matrix from a 1-5 ratings scale to a -1 to 1 scale indicating user preference
+        :param ratings: The ratings DataFrame
+        :param user_means: The user means
+        :param user_std_devs: The user standatd deviations
+        :return: The adjusted ratings DataFrame
         """
         adjusted_ratings_values = ratings.values - user_means.values
         if user_std_devs:
@@ -93,16 +97,17 @@ class CollaborativeFiltering(object):
     @staticmethod
     def adjust_predictions(predicted,  user_means, user_std_devs=None):
         """
-        :param predicted:
-        :param user_means:
-        :param user_std_devs:
-        :return:
+        Adjust the predictions back to a 1-5 ratings scale
+        :param predicted: The predicted DataFrame
+        :param user_means: The user means
+        :param user_std_devs: The user standard deviations. Optional
+        :return: The adjusted predictions
         """
         if user_std_devs:
-            adjusted_predicitons_values = predicted.values * user_std_devs.values
+            adjusted_predictions_values = predicted.values * user_std_devs.values
         else:
-            adjusted_predicitons_values = predicted.values
-        adjusted_predicted_values = adjusted_predicitons_values + user_means.values
+            adjusted_predictions_values = predicted.values
+        adjusted_predicted_values = adjusted_predictions_values + user_means.values
         adjusted_predictions = pd.DataFrame(adjusted_predicted_values,
                                             index=predicted.index, columns=predicted.columns)
         adjusted_predictions = adjusted_predictions.fillna(value=0).applymap(clamp)
@@ -110,11 +115,11 @@ class CollaborativeFiltering(object):
 
     def predict_user_user(self, adjust='full', similarity='cosine', k=-1):
         """
-
-        :param k:
-        :param adjust:
-        :param similarity:
-        :return:
+        Do user user prediciton
+        :param k: The number of neighbours for k-nearest neighbours
+        :param adjust: <'mean','full'> adjust the ratings for user means or means and standard deviations respectively
+        :param similarity: <'cosine', 'pearson'> The similarity measure for the user similarity
+        :return: The prediction DataFrame
         """
         ratings = self.ratings
         if adjust == 'mean':
