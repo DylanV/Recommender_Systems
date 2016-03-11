@@ -3,7 +3,9 @@ import pandas as pd
 
 from aux import clamp
 
-class MatrixFoctorisation(object):
+
+class MatrixFactorisation(object):
+
     def __init__(self, ratings):
         self.user_means = self.calculate_user_means(ratings)
         self.user_std_devs = self.calculate_user_std_devs(ratings)
