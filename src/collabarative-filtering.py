@@ -54,3 +54,36 @@ class CollaborativeFiltering(object):
             return ratings.transpose().corr(method='pearson')
         else:
             raise KeyError(method+' is not an implemented method.')
+
+    def adjust_ratings(self, user_means, user_std_devs=None):
+        """
+
+        :param user_means:
+        :param user_std_devs:
+        :return:
+        """
+        adjusted_ratings_values = self.ratings.values - user_means.values
+        if user_std_devs:
+            adjusted_ratings_values = adjusted_ratings_values / user_std_devs.values
+        adjusted_ratings = pd.DataFrame(adjusted_ratings_values, index=self.rating.index, columns=self.index.columns)
+        adjusted_ratings.fillna(value=0)
+        return adjusted_ratings
+
+    def adjust_predictions(self, predicted,  user_means, user_std_devs=None):
+        """
+        :param predicted:
+        :param user_means:
+        :param user_std_devs:
+        :return:
+        """
+        if user_std_devs:
+            adjusted_predicitons_values = predicted.values * user_std_devs.values
+        else:
+            adjusted_predicitons_values = predicted.values
+        adjusted_predicted_values = adjusted_predicitons_values + user_means.values
+        adjusted_predictions = pd.DataFrame(adjusted_predicted_values,
+                                            index=self.ratings.index, columns=self.ratings.columns)
+        adjusted_predictions = adjusted_predictions.fillna(value=0).applymap(self.clamp)
+        return adjusted_predictions
+
+
