@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from Extras import clamp
+from extras import clamp
 
 class BaselinePredictor(object):
 

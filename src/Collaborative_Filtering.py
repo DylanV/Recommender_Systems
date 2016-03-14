@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from aux import clamp
-
+from extras import clamp
 
 class CollaborativeFiltering(object):
 
