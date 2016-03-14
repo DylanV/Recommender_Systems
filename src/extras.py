@@ -37,7 +37,7 @@ def get_ratings_sparsity(ratings):
     sparsity /= (ratings.shape[0] * ratings.shape[1])
     sparsity *= 100
 
-    return 'Sparsity: {:4.2f}%'.format(sparsity)
+    return sparsity
 
 
 def split_train_test(ratings, test_ratio=0.2):
