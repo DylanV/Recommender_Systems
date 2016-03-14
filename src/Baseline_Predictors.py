@@ -33,7 +33,7 @@ class BaselinePredictor(object):
         :return: A DataFrame indexed on user_id with one column std with the user standard deviations
         """
         ratings = ratings.replace(0, np.nan)
-        std_devs = pd.DataFrame(ratings.std(axis=1), index=ratings.index, columns=['std']).fillna(value=0)
+        std_devs = pd.DataFrame(ratings.std(axis=1, ddof=0), index=ratings.index, columns=['std']).fillna(value=0)
         return std_devs
 
     @staticmethod
