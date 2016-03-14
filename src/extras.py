@@ -83,7 +83,7 @@ def clamp(x, floor=1, ceiling=5):
     :return: The clamped value of x
     """
     if x > ceiling:
-        x = max
+        x = ceiling
     elif x < floor:
         x = floor
     return x
