@@ -20,6 +20,8 @@ class TestExtras(unittest.TestCase):
         self.assertEqual(len(test.values.nonzero()[0]), 3)
         self.assertEqual(len(train.values.nonzero()[0]), 3)
         self.assertTrue(np.all((train.values * test.values) == 0))
+        self.assertEqual(train.shape, ratings.shape)
+        self.assertEqual(test.shape, ratings.shape)
 
     def test_clamp_default(self):
         self.assertEqual(extras.clamp(4), 4, 'Clamp default changing value in range')
