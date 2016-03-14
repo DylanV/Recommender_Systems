@@ -70,3 +70,6 @@ misc.xml
 modules.xml
 vcs.xml
 workspace.xml
+
+#Dataset thing
+.DS_Store
