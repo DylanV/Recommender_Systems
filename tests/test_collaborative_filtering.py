@@ -19,7 +19,7 @@ class TestCollaborativeFiltering(unittest.TestCase):
         true_user_means = np.asarray([3., 3., 4.5, 2., 3.25])
         self.assertTrue(np.all((true_user_means - cf.user_means.values[:, 0]) == 0))
 
-        true_user_std_devs = [np.sqrt(2./3.), 0.,0.5, 1.0, np.sqrt(2.1875)]
+        true_user_std_devs = [np.sqrt(2./3.), 0.0, 0.5, 1.0, np.sqrt(2.1875)]
         self.assertTrue(np.all((true_user_std_devs - cf.user_std_devs.values[:, 0]) == 0))
 
     def test_calculate_user_means(self):
@@ -88,7 +88,7 @@ class TestCollaborativeFiltering(unittest.TestCase):
                                      [0, 3, 5]])
         ratings = pd.DataFrame(ratings_values)
         cf = CollaborativeFiltering(ratings)
-        adjusted_ratings = cf.adjust_ratings()
+        adjusted_ratings = cf.adjust_ratings(ratings)
         true_adjusted_ratings_values = np.asarray([[-1., 1., 0.],
                                                     [-1., 0., 1.],
                                                     [0., -1., 1.]])
@@ -101,7 +101,7 @@ class TestCollaborativeFiltering(unittest.TestCase):
                                      [0, 1, 5]])
         ratings = pd.DataFrame(ratings_values)
         cf = CollaborativeFiltering(ratings)
-        adjusted_ratings = cf.adjust_ratings(type='full')
+        adjusted_ratings = cf.adjust_ratings(ratings, type='full')
         true_adjusted_ratings_values = np.asarray([[-1., 1., 0.],
                                                     [1., 0., -1.],
                                                     [0., -1., 1.]])
@@ -113,14 +113,14 @@ class TestCollaborativeFiltering(unittest.TestCase):
                                      [0, 3, 5]])
         cf = CollaborativeFiltering(pd.DataFrame(ratings_values))
 
-        prediction_values = np.asarray([[-1., 1., 0.],
+        prediction_values = np.asarray([[-1., 1., 0],
                                         [-1., 0., 1.],
                                         [0., -1., 1.]])
         predictions = cf.adjust_predictions(predicted = pd.DataFrame(prediction_values), type='means')
-        true_predictions =  np.asarray([[1., 3., 1.],
-                                     [2., 1., 4.],
-                                     [1., 3., 5.]])
-        print predictions
+        true_predictions = np.asarray([[1., 3., 2.],
+                                     [2., 3., 4.],
+                                     [4., 3., 5.]])
+        
         self.assertTrue(np.all((true_predictions - predictions.values[:, :]) == 0))
 
     def test_adjust_predictions_full(self):
@@ -133,8 +133,8 @@ class TestCollaborativeFiltering(unittest.TestCase):
                                         [1., 0., -1.],
                                         [0., -1., 1.]])
         predictions = cf.adjust_predictions(predicted = pd.DataFrame(prediction_values), type='full')
-        true_predictions =  np.asarray([[1, 5, 1],
-                                     [5, 1, 1],
-                                     [1, 1, 5]])
+        true_predictions =  np.asarray([[1, 5, 3],
+                                     [5, 3, 1],
+                                     [3, 1, 5]])
 
         self.assertTrue(np.all((true_predictions - predictions.values[:, :]) == 0))
